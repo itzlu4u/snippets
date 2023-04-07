@@ -1,0 +1,7 @@
+node: "{{ pve_cluter_node_list | random }}"
+api_user: "user@pam"
+api_token_secret: YOUR_API_KEY
+api_host: "IP_OF_YOUR_PVE_HOST"
+ostemplate_path: PVE_TEMPLATE_STORAGE_NAME
+storage: PVE_STORAGE_NAME 
+storage_path: PVE_VM_HDD_STORAGE_PATH

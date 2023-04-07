@@ -1,0 +1,86 @@
+---
+- name: Create Proxmox VM odr container
+  hosts: localhost
+  gather_facts: False
+  connection: local
+  vars:
+    pve_cluter_node_list:
+      - node-1
+      - node-2
+      - node-3
+
+    vm_storage: 32
+    vm_ram: 4096
+    vm_cpu: 4
+    vm_type: ct
+   
+
+  vars_prompt:
+    
+
+    - name: pve_environment
+      prompt: "Please choose the PVE pve_environment ('env1' or 'env2')"
+      private: no
+    
+    - name: vm_os
+      prompt: Please choose the OS ('rocky' or 'ubuntu')"
+      private: no
+    
+    - name: vm_name
+      prompt: "Enter the prefered hostname"
+      private: no
+    
+    - name: vm_id
+      prompt: "Please Enter the ID"
+      private: no
+
+  tasks:
+
+  - name: Import Vars for pve
+    ansible.builtin.include_vars:
+      name: pve_vars
+      file: "vars/{{ pve_environment }}.yml"
+    tags:
+    - import_vars
+  
+  - name: import vars for os 
+    ansible.builtin.include_vars:
+      name: os_vars
+      file: "vars/{{ vm_os }}.yml"
+    tags:
+    - import_vars
+
+  - name: Set OS dependent variables, if not already defined by user 
+    ansible.builtin.set_fact:
+      "{{ item.key }}": "{{ item.value }}"
+    when: not lookup('varnames', '^' + item.key + '$')
+    with_dict: "{{ os_vars }}"
+    tags: always
+
+  - name: Set PVE dependent variables, if not already defined by user 
+    ansible.builtin.set_fact:
+      "{{ item.key }}": "{{ item.value }}"
+    when: not lookup('varnames', '^' + item.key + '$')
+    with_dict: "{{ pve_vars }}"
+    tags: always 
+    no_log: true 
+
+  - name: Create new container with minimal options
+    community.general.proxmox:
+      vmid: "{{ vm_id }}"
+      node: "{{ node }}"
+      api_token_secret: "{{ api_token_secret }}"
+      api_token_id: ansible
+      api_host: "{{ api_host }}"
+      api_user: "{{ api_user }}"
+      hostname: "{{ vm_name  }}"
+      ostemplate: "{{ ostemplate_path }}:vztmpl/{{ vm_os_path }}"
+      storage: "{{ storage }}"
+      mounts: '{"rootfs":"{{ storage_path }}:{{ vm_storage }}"}'
+      cores: "{{ vm_cpu }}"
+      memory: "{{ vm_ram }}"
+      unprivileged: true
+      netif: '{"net0":"name=eth0,ip=dhcp,bridge=vmbr0"}'
+      description: "created by ansible with User: {{ api_user }}"
+      
+    when: vm_type == 'ct'
