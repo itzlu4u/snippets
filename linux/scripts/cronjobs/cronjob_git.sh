@@ -20,6 +20,7 @@ LOCAL_COMMIT=$(git rev-parse HEAD)
 REMOTE_COMMIT=$(git rev-parse "$GIT_REMOTE/$GIT_BRANCH")
 
 if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+  eval git pull
   echo "New changes detected, updating repository..."
   
   # Check if git pull was successful
