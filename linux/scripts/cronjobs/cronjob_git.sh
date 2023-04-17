@@ -7,7 +7,7 @@
 
 ## Variables
 
-GIT_REPO_DIR="/var/docker/blog/"
+GIT_REPO_DIR="/path/to/folder"
 GIT_REMOTE="origin"
 GIT_BRANCH="main"
 COMMANDS_TO_RUN="COMAND TO RUN"
@@ -35,3 +35,4 @@ else
   echo "No changes detected."
 fi  
 
+# 
